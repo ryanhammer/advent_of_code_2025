@@ -1,0 +1,63 @@
+const exampleRanges = [
+  "11-22",
+  "95-115",
+  "998-1012",
+  "1188511880-1188511890",
+  "222220-222224",
+  "1698522-1698528",
+  "446443-446449",
+  "38593856-38593862",
+  "565653-565659",
+  "824824821-824824827",
+  "2121212118-2121212124",
+];
+
+const idRanges = ["24-46","124420-259708","584447-720297","51051-105889","6868562486-6868811237","55-116","895924-1049139","307156-347325","372342678-372437056","1791-5048","3172595555-3172666604","866800081-866923262","5446793-5524858","6077-10442","419-818","57540345-57638189","2143479-2274980","683602048-683810921","966-1697","56537997-56591017","1084127-1135835","1-14","2318887654-2318959425","1919154462-1919225485","351261-558210","769193-807148","4355566991-4355749498","809094-894510","11116-39985","9898980197-9898998927","99828221-99856128","9706624-9874989","119-335"];
+
+function determineIdInvalid (id: number): boolean {
+  const idString = id.toString();
+  const idStringLength = idString.length;
+
+  for (let i = 1; i <= Math.floor(idStringLength / 2); i++) {
+    if (idStringLength % i !== 0) continue;
+
+    const idSubstringToTest = idString.slice(0, i);
+    let isInvalid = true;
+
+    for (let j = i; j < idStringLength; j+=i) {
+      if (idSubstringToTest !== idString.slice(j, j + i)) {
+        isInvalid = false;
+        break;
+      }
+    }
+
+    if (isInvalid) return true;
+  }
+
+  return false;
+}
+
+function determineInvalidIdSum (idRanges: string[]): number {
+  let invalidIdSum = 0;
+  let invalidIdCount = 0;
+
+  idRanges.forEach((range) => {
+    const rangeParts = range.split("-");
+
+    const lowerLimit = Number(rangeParts[0]);
+    const upperLimit = Number(rangeParts[1]);
+
+    for (let i = lowerLimit; i<=upperLimit; i++) {      
+      if (determineIdInvalid(i)) {
+          invalidIdSum += i;
+          invalidIdCount++;
+      }
+    }
+  })
+
+  console.log(invalidIdCount);
+  return invalidIdSum;
+}
+
+console.log(determineInvalidIdSum(exampleRanges));
+console.log(determineInvalidIdSum(idRanges));
