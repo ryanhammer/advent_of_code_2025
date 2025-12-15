@@ -1,4 +1,4 @@
-function determineNumServerPathsOut(input: {[key: string]: string}): number {
+function determineNumServerPathsOut(input: {[key: string]: string}): bigint {
   const inputKeys = Object.keys(input);
 
   const structuredInput: {[key: string]: string[]} = {};
@@ -8,27 +8,35 @@ function determineNumServerPathsOut(input: {[key: string]: string}): number {
     structuredInput[key] = valueArr;
   });
 
-  function checkPaths(finishedPaths: string[][], pathsToCheck: string[][]): string[][] {
-    const unfinishedPaths: string[][] = [];
+  const memo = new Map<string, bigint>();
 
-    pathsToCheck.forEach((path) => {
-      const keyToCheck = path[path.length - 1];
+  function pathsFrom(node: string, hasFft: boolean, hasDac: boolean): bigint {
+    const key = `${node}_${hasFft ? 1 : 0}_${hasDac ? 1 : 0}`;
+    if (memo.has(key)) return memo.get(key)!;
 
-      if (structuredInput[keyToCheck][0] === 'out') {
-        finishedPaths.push([...path, 'out']);
+    let total: bigint = 0n;
+    const nextNodes = structuredInput[node] ?? [];
+
+    for (const next of nextNodes) {
+      if (next === 'out') {
+        if (hasFft && hasDac) {
+          total += 1n;
+        }
       } else {
-        structuredInput[keyToCheck].forEach((newPathKey) => {
-          unfinishedPaths.push([...path, newPathKey]);
-        });
-
-        checkPaths(finishedPaths, unfinishedPaths);
+        const newFft = hasFft || (next === 'fft');
+        const newDac = hasDac || (next === 'dac');
+        total += pathsFrom(next, newFft, newDac);
       }
-    });
+    }
 
-    return finishedPaths;
+    memo.set(key, total);
+    return total;
   }
 
-  const serverPathsOut = checkPaths([], [['svr']]);
+  const result = pathsFrom('svr', false, false);
 
-  return serverPathsOut.filter(pathOut => pathOut.includes('fft') && pathOut.includes('dac')).length;
+  return result;
 }
+
+console.log(determineNumServerPathsOut(exampleInput));
+console.log(determineNumServerPathsOut(input));
